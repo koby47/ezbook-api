@@ -17,9 +17,9 @@ const app = express();
 app.use(express.json());
 
 // Use routers
-app.use(userRouter);
-app.use(facilityRouter);
-app.use(bookingRouter);
+app.use("/api/user",userRouter);
+app.use("/api/facility",facilityRouter);
+app.use("/api/bookings",bookingRouter);
 
 // Error handling middleware (last)
 app.use(errorHandler);
@@ -30,13 +30,13 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Connected to MongoDB");
+    console.log(" Connected to MongoDB");
 
     app.listen(PORT, () => {
-      console.log(`✅ Server listening on port ${PORT}`);
+      console.log(`Server listening on port ${PORT}`);
     });
   } catch (err) {
-    console.error("❌ MongoDB Connection Error:", err);
+    console.error(" MongoDB Connection Error:", err);
   }
 };
 

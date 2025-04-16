@@ -15,17 +15,74 @@ export const addFacility = async(req,res) =>{
     }
 };
 
-export const getFacilities = async(req,res,next)=>{
-    try{
-        const {
-            filter ="{}",sort = "{}" }= req.query;
-        const results = await FacilityModel.find(JSON.parse(filter)).sort(JSON.parse(sort));
-        res.json(results);
-        }catch (err){
-            next(err);
-    }
-};
 
+export const getFacilities = async (req, res) => {
+  try {
+    const {
+      type,
+      location,
+      minPrice,
+      maxPrice,
+      availability,
+      keyword,
+      sortBy = "price",
+      order = "asc",
+      page = 1,
+      limit = 6
+    } = req.query;
+
+    const filter = {};
+
+    // Text search on name or description
+    if (keyword) {
+      filter.$or = [
+        { name: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } }
+      ];
+    }
+
+    // 🏷 Type and Location (case-insensitive exact match)
+    if (type) filter.type = new RegExp(`^${type}$`, "i");
+    if (location) filter.location = new RegExp(`^${location}$`, "i");
+
+    //  Price range
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    // Availability filter
+    if (availability !== undefined) {
+      filter.availability = availability === "true";
+    }
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // ↕Sorting
+    const sort = {};
+    sort[sortBy] = order === "desc" ? -1 : 1;
+
+    const facilities = await FacilityModel.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await FacilityModel.countDocuments(filter);
+
+    res.status(200).json({
+      total,
+      page: parseInt(page),
+      count: facilities.length,
+      facilities
+    });
+
+  } catch (err) {
+    console.error("🔥 Facility Filter Error:", err.message);
+    res.status(500).json({ error: "Error filtering facilities" });
+  }
+};
 export const updateFacility = async(req,res)=>{
     try{
         const newPictures = req.files ? req.files.map(file => file.filename): [];

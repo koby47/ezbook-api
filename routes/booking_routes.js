@@ -3,17 +3,20 @@ import {
   createBooking,
   getBookings,
   updateBookingStatus,
-  deleteBooking
+  deleteBooking,
+  getMyBookings
 } from '../controllers/booking_controllers.js';
 
 import { authenticate, authorize } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post("/book", authenticate, createBooking);
-router.get("/book", authenticate, getBookings);
+router.post("/", authenticate, createBooking);
+router.get("/", authenticate, authorize("manager"),getBookings);
+router.get("/mine", authenticate, getMyBookings);
 router.put("/:id", authenticate, authorize("manager"), updateBookingStatus);
 router.delete("/:id", authenticate, authorize("manager"), deleteBooking);
+
 
 export default router;
 // This code defines an Express router for managing bookings.

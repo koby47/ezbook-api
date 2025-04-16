@@ -4,7 +4,8 @@ import {
   getBookings,
   updateBookingStatus,
   deleteBooking,
-  getMyBookings
+  getMyBookings,
+  exportMyBookingsToPDF
 } from '../controllers/booking_controllers.js';
 
 import { authenticate, authorize } from "../middlewares/auth.js";
@@ -16,6 +17,7 @@ router.get("/", authenticate, authorize("manager"),getBookings);
 router.get("/mine", authenticate, getMyBookings);
 router.put("/:id", authenticate, authorize("manager"), updateBookingStatus);
 router.delete("/:id", authenticate, authorize("manager"), deleteBooking);
+router.get("/mine/pdf", authenticate, exportMyBookingsToPDF);
 
 
 export default router;

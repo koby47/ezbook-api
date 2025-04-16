@@ -2,6 +2,7 @@ import { BookingModel } from "../models/booking_models.js";
 import { bookingValidator } from "../validators/booking_validators.js";
 import { sendEmail } from "../utils/sendEmails.js";
 import mongoose from "mongoose";
+import PDFDocument from "pdfkit";
 
 // // 
 
@@ -134,7 +135,7 @@ export const updateBookingStatus = async (req, res) => {
       return res.status(400).json({ error: "Invalid status value" });
     }
 
-    
+
     const booking = await BookingModel.findById(req.params.id).populate("userId", "userName email");
 
     if (!booking) {
@@ -179,5 +180,42 @@ export const deleteBooking = async (req, res) => {
     res.json({ message: `Booking with id ${req.params.id} deleted` });
   } catch (err) {
     res.status(500).json({ error: "Error deleting booking" });
+  }
+};
+export const exportMyBookingsToPDF = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const bookings = await BookingModel.find({ userId })
+      .populate("facilityId", "name location price")
+      .sort({ date: -1 });
+
+    const doc = new PDFDocument();
+
+    // Set PDF headers
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=ezbook-bookings.pdf");
+
+    doc.pipe(res);
+
+    doc.fontSize(20).text("Your EzBook Bookings", { align: "center" }).moveDown();
+
+    bookings.forEach((booking, index) => {
+      doc.fontSize(14).text(`Booking #${index + 1}`, { underline: true });
+      doc.text(`Facility: ${booking.facilityId?.name}`);
+      doc.text(`Location: ${booking.facilityId?.location}`);
+      doc.text(`Date: ${new Date(booking.date).toLocaleDateString()}`);
+      doc.text(`Time: ${booking.time}`);
+      doc.text(`Package: ${booking.package}`);
+      doc.text(`Price: GHS ${booking.facilityId?.price}`);
+      doc.text(`Status: ${booking.status}`);
+      doc.moveDown();
+    });
+
+    doc.end();
+
+  } catch (err) {
+    console.error("🔥 PDF Export Error:", err.message);
+    res.status(500).json({ error: "Error generating PDF" });
   }
 };

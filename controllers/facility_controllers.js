@@ -1,5 +1,5 @@
 import{FacilityModel } from '../models/facility_models.js';
-import { addFacilityValidator } from '../validators/facility_validators';
+import { addFacilityValidator } from '../validators/facility_validators.js';
 
 export const addFacility = async(req,res) =>{
     try{

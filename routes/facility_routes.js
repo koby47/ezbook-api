@@ -5,16 +5,17 @@ import{
     updateFacility,
     deleteFacility,
 } from '../controllers/facility_controllers.js';
-import{authenticate,checkRole} from '../middlewares/auth.js';
+import { facilityPicturesUpload } from '../utils/upload.js';
+import{authenticate,authorize} from '../middlewares/auth.js';
 
 const router = express.Router();
 
-const upload = multer({ Dest:'uploads/' });
+// const upload = multer({ Dest:'uploads/' });
 
-router.post("/",authenticate,checkRole('manager'),upload.array('pictures',5),addFacility);
+router.post("/",authenticate,authorize('manager'), facilityPicturesUpload.array('pictures',5),addFacility);
 router.get("/",authenticate,getFacilities);
-router.put("/:id",authenticate,checkRole('manager'),upload.array('pictures',5),updateFacility);
-router.delete("/:id",authenticate,checkRole('manager'),deleteFacility);
+router.put("/:id",authenticate,authorize('manager'),facilityPicturesUpload.array('pictures',5),updateFacility);
+router.delete("/:id",authenticate,authorize('manager'),deleteFacility);
 
 export default router;
 // This code defines an Express router for managing facilities.

@@ -1,4 +1,4 @@
-// server.js
+// index.js
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -17,23 +17,24 @@ const app = express();
 app.use(express.json());
 
 // Use routers
-app.use("/api/user",userRouter);
-app.use("/api/facility",facilityRouter);
-app.use("/api/bookings",bookingRouter);
+app.use("/api/user", userRouter);
+app.use("/api/facility", facilityRouter);
+app.use("/api/bookings", bookingRouter);
 
 // Error handling middleware (last)
 app.use(errorHandler);
 
+// Dynamic port for Render
 const PORT = process.env.PORT || 5000;
 
 // Async function to connect and start the server
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log(" Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
     app.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`);
+      console.log(` Server listening on port ${PORT}`);
     });
   } catch (err) {
     console.error(" MongoDB Connection Error:", err);

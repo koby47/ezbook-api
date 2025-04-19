@@ -2,6 +2,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
 
 // Routes
 import userRouter from "./routes/users_routes.js";
@@ -13,7 +14,9 @@ import errorHandler from "./middlewares/errorhandling.js";
 
 dotenv.config(); // Load environment variables
 
+
 const app = express();
+app.use (cors());
 app.use(express.json());
 
 // Use routers

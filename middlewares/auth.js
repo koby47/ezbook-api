@@ -1,20 +1,50 @@
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 
-export const authenticate = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+// export const authenticate = (req, res, next) => {
+//     const authHeader = req.headers.authorization;
 
-    if(!authHeader?.startsWith('Bearer ')) {
-        return res.status(401).json({error: 'Unauthorized: No token provided'});
+//     if(!authHeader?.startsWith('Bearer ')) {
+//         return res.status(401).json({error: 'Unauthorized: No token provided'});
+//     }
+//     const token = authHeader.split(' ')[1];
+//     try{
+//         const decoded =jwt.verify(token, process.env.JWT_SECRET);
+//         req.user = decoded;//{userId,role  }
+//         next();
+//     }catch (err){
+//         return res.status(401).json({error: 'Unauthorized: Invalid token'});
+//     }
+// };
+
+import jwt from "jsonwebtoken";
+import { UserModel } from "../models/users_models.js"; // import UserModel
+
+export const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized: No token provided" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // decoded = { userId, role }
+
+    const user = await UserModel.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized: User not found" });
     }
-    const token = authHeader.split(' ')[1];
-    try{
-        const decoded =jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;//{userId,role  }
-        next();
-    }catch (err){
-        return res.status(401).json({error: 'Unauthorized: Invalid token'});
-    }
+
+    req.user = user; // attach full user to the request
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Unauthorized: Invalid token" });
+  }
 };
+
 
 //Role middleware:Checks if user has the required role
 export const authorize = (roles) => {

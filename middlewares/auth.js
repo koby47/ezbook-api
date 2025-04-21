@@ -46,6 +46,7 @@ export const authenticate = async (req, res, next) => {
 };
 
 
+
 //Role middleware:Checks if user has the required role
 export const authorize = (roles) => {
     return(req,res,next) => {

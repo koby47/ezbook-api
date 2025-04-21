@@ -47,12 +47,12 @@ export const authenticate = async (req, res, next) => {
 
 
 
-//Role middleware:Checks if user has the required role
 export const authorize = (roles) => {
-    return(req,res,next) => {
-        if(!req.user || req.user.role !== roles){
-            return res.status(403).json({error: 'Forbidden: You do not have permission to access this resource'});
-        }
-        next();
-    };     
-};
+    return (req, res, next) => {
+      if (!req.user || !roles.includes(req.user.role)) {
+        return res.status(403).json({ error: 'Forbidden: You do not have permission to access this resource' });
+      }
+      next();
+    };
+  };
+  

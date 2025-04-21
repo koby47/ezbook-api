@@ -2,14 +2,18 @@ import express from 'express';
 import{
     registerUser,
     loginUser,
-    getCurrentUser
+    getCurrentUser,getAllUsers
 } from '../controllers/users_controllers.js';
 import { authenticate } from '../middlewares/auth.js';
+
+import { authorize } from '../middlewares/auth.js';
 const router = express.Router();
 
 router.post("/register",registerUser);
 router.post("/login",loginUser);
 router.get("/me", authenticate, getCurrentUser);
+// Only admins:
+router.get("/all", authenticate, authorize(["admin"]), getAllUsers);
 
 export default router;
 // This code defines an Express router for user registration and login.

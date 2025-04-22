@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/",authenticate,authorize (["admin", "manager"]), facilityPicturesUpload.array('pictures',5),addFacility);
 router.get("/",authenticate,getFacilities);
 router.put("/:id",authenticate,authorize('manager'),facilityPicturesUpload.array('pictures',5),updateFacility);
-router.delete("/:id",authenticate,authorize('manager'),deleteFacility);
+router.delete("/:id",authenticate,authorize(['manager','admin']),deleteFacility);
 
 export default router;
 // This code defines an Express router for managing facilities.

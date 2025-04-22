@@ -16,3 +16,4 @@ const bookingSchema = new Schema({
 bookingSchema.plugin(normalize);
 
 export const BookingModel = model("booking",bookingSchema);
+

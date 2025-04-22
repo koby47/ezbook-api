@@ -10,7 +10,7 @@ const facilitySchema = new Schema({
     availability:{type:Boolean,default:true},
     pictures: [{ type: String }],
     bookings:[{type:String}],
-    managerId:{type:Schema.Types.ObjectId,ref:'user',required:true},
+    createdBy:{type:Schema.Types.ObjectId,ref:'user',required:true},
     createdAt:{type:Date,default:Date.now},
     updatedAt:{type:Date,default:Date.now}
 },{timestamps:true});

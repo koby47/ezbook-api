@@ -16,6 +16,7 @@ export const addFacility = async(req,res) =>{
 };
 
 
+
 export const getFacilities = async (req, res) => {
   try {
     const {
@@ -33,7 +34,12 @@ export const getFacilities = async (req, res) => {
 
     const filter = {};
 
-    // Text search on name or description
+    // Only show manager's own facilities
+    if (req.user.role === "manager") {
+      filter.createdBy = req.user._id;
+    }
+
+    //  Text search on name or description
     if (keyword) {
       filter.$or = [
         { name: { $regex: keyword, $options: "i" } },
@@ -41,18 +47,18 @@ export const getFacilities = async (req, res) => {
       ];
     }
 
-    // 🏷 Type and Location (case-insensitive exact match)
+    // 🏷 Type and Location
     if (type) filter.type = new RegExp(`^${type}$`, "i");
     if (location) filter.location = new RegExp(`^${location}$`, "i");
 
-    //  Price range
+    // Price range
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    // Availability filter
+    //  Availability
     if (availability !== undefined) {
       filter.availability = availability === "true";
     }
@@ -60,10 +66,11 @@ export const getFacilities = async (req, res) => {
     // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // ↕Sorting
+    // ↕ Sorting
     const sort = {};
     sort[sortBy] = order === "desc" ? -1 : 1;
 
+    //  Query with filters
     const facilities = await FacilityModel.find(filter)
       .sort(sort)
       .skip(skip)
@@ -79,10 +86,11 @@ export const getFacilities = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("🔥 Facility Filter Error:", err.message);
+    console.error(" Facility Filter Error:", err.message);
     res.status(500).json({ error: "Error filtering facilities" });
   }
 };
+
 export const updateFacility = async(req,res)=>{
     try{
         const newPictures = req.files ? req.files.map(file => file.filename): [];
@@ -100,11 +108,33 @@ export const updateFacility = async(req,res)=>{
     }
 };
 
-export const deleteFacility = async(req,res)=>{
-    try{
-        await FacilityModel.findByIdAndDelete(req.params.id);
-        res.json({message:`Facility with id ${req.params.id} deleted successfully`})
-    }catch(err){
-        res.statsu(500).json({error:"Error deleting facility"});
+
+
+export const deleteFacility = async (req, res) => {
+  try {
+    const facility = await FacilityModel.findById(req.params.id);
+
+    if (!facility) {
+      return res.status(404).json({ error: "Facility not found" });
     }
+
+    //  Managers can only delete their own facilities
+    if (
+      req.user.role === "manager" &&
+      String(facility.createdBy) !== String(req.user._id)
+    ) {
+      return res.status(403).json({
+        error: "Forbidden: You can only delete facilities you created"
+      });
+    }
+
+    // Admin can delete anything; manager validated above
+    await facility.deleteOne();
+
+    res.status(200).json({ message: "Facility deleted successfully" });
+
+  } catch (error) {
+    console.error("Delete Facility Error:", error.message);
+    res.status(500).json({ error: "Error deleting facility" });
+  }
 };

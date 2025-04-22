@@ -85,10 +85,9 @@ export const getBookings = async (req, res) => {
 };
 
 
+
 export const getMyBookings = async (req, res) => {
   try {
-    const userId = req.user.userId;
-
     const {
       startDate,
       endDate,
@@ -96,7 +95,72 @@ export const getMyBookings = async (req, res) => {
       limit = 5
     } = req.query;
 
-    const filter = { userId };
+    const skip = (page - 1) * parseInt(limit);
+    let filter = {};
+    let bookings;
+
+    // 🧑‍💼 Manager
+    if (req.user.role === "manager") {
+      bookings = await BookingModel.find()
+        .populate({
+          path: "facilityId",
+          select: "name location price createdBy",
+          match: { createdBy: req.user._id }
+        })
+        .populate("userId", "userName email")
+        .sort({ date: -1 });
+
+      // Filter out bookings not related to their facilities
+      bookings = bookings.filter(b => b.facilityId !== null);
+
+      // Filter by date (optional)
+      if (startDate || endDate) {
+        bookings = bookings.filter(b => {
+          const bookingDate = new Date(b.date);
+          if (startDate && bookingDate < new Date(startDate)) return false;
+          if (endDate && bookingDate > new Date(endDate)) return false;
+          return true;
+        });
+      }
+
+      const paginated = bookings.slice(skip, skip + parseInt(limit));
+      return res.status(200).json({
+        total: bookings.length,
+        page: parseInt(page),
+        count: paginated.length,
+        bookings: paginated
+      });
+
+    }
+
+    // 🛡 Admin → See ALL bookings
+    if (req.user.role === "admin") {
+      filter = {}; // No restrictions
+
+      if (startDate || endDate) {
+        filter.date = {};
+        if (startDate) filter.date.$gte = new Date(startDate);
+        if (endDate) filter.date.$lte = new Date(endDate);
+      }
+
+      bookings = await BookingModel.find(filter)
+        .populate("facilityId", "name location price createdBy")
+        .populate("userId", "userName email")
+        .sort({ date: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+
+      const total = await BookingModel.countDocuments(filter);
+      return res.status(200).json({
+        total,
+        page: parseInt(page),
+        count: bookings.length,
+        bookings
+      });
+    }
+
+    // 🧍‍♂️ Regular User
+    filter.userId = req.user.userId;
 
     if (startDate || endDate) {
       filter.date = {};
@@ -104,9 +168,7 @@ export const getMyBookings = async (req, res) => {
       if (endDate) filter.date.$lte = new Date(endDate);
     }
 
-    const skip = (page - 1) * limit;
-
-    const bookings = await BookingModel.find(filter)
+    bookings = await BookingModel.find(filter)
       .populate("facilityId", "name location price")
       .sort({ date: -1 })
       .skip(skip)
@@ -122,10 +184,12 @@ export const getMyBookings = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(" Get My Bookings Error:", err.message);
+    console.error("Get My Bookings Error:", err.message);
     res.status(500).json({ error: "Error fetching your bookings" });
   }
 };
+
+
 
 export const updateBookingStatus = async (req, res) => {
   try {
@@ -135,13 +199,26 @@ export const updateBookingStatus = async (req, res) => {
       return res.status(400).json({ error: "Invalid status value" });
     }
 
-
-    const booking = await BookingModel.findById(req.params.id).populate("userId", "userName email");
+    // 👇 Populate user and facility with createdBy field
+    const booking = await BookingModel.findById(req.params.id)
+      .populate("userId", "userName email")
+      .populate("facilityId", "name createdBy");
 
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
     }
 
+    // Restrict manager from updating other managers’ bookings
+    if (
+      req.user.role === "manager" &&
+      String(booking.facilityId.createdBy) !== String(req.user._id)
+    ) {
+      return res.status(403).json({
+        error: "Forbidden: You can only update bookings for your own facilities"
+      });
+    }
+
+    // Update status
     booking.status = status;
     await booking.save();
 
@@ -153,14 +230,13 @@ export const updateBookingStatus = async (req, res) => {
         html: `
           <div style="font-family: Arial; padding: 20px;">
             <h3>Hi ${booking.userId.userName},</h3>
-            <p>Your booking has been <strong>${status.toUpperCase()}</strong>.</p>
-            <p>Status update: <strong>${status}</strong></p>
+            <p>Your booking for <strong>${booking.facilityId.name}</strong> has been <strong>${status.toUpperCase()}</strong>.</p>
             <p>Thank you for using EzBook!</p>
           </div>
         `
       });
 
-      console.log(` Email sent for ${status} status`);
+      console.log(`Email sent for ${status} status`);
     } catch (err) {
       console.error("Email failed:", err.message);
     }
@@ -168,10 +244,11 @@ export const updateBookingStatus = async (req, res) => {
     res.status(200).json({ message: `Booking ${status}`, booking });
 
   } catch (err) {
-    console.error(" Booking Status Error:", err.message);
+    console.error("Booking Status Error:", err.message);
     res.status(500).json({ error: "Error updating booking status" });
   }
 };
+
 
 
 export const deleteBooking = async (req, res) => {

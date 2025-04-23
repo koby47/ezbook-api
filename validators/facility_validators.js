@@ -8,7 +8,7 @@ export const addFacilityValidator = Joi.object({
     price:Joi.number().required(),
     availability:Joi.boolean().default(true),
     pictures:Joi.array().items(Joi.string()).default([]),
-    managerId:Joi.string().required(),
+    createdBy:Joi.string().required(),
     createdAt:Joi.date().default(Date.now),
     updatedAt:Joi.date().default(Date.now)
 });

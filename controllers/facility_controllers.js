@@ -26,7 +26,7 @@ export const addFacility = async (req, res) => {
       { abortEarly: false }
     );
 
-    // Fix typo: manp → map
+  
     if (error) return res.status(422).json({ errors: error.details.map(e => e.message) });
 
     // Add createdBy from logged-in user

@@ -16,7 +16,7 @@ dotenv.config(); // Load environment variables
 
 const allowedOrigins = [
   "http://localhost:3000", // Dev
-  // Live
+  "https://ezbookings.netlify.app/"
 ];
 
 const app = express();

@@ -14,22 +14,23 @@ import errorHandler from "./middlewares/errorhandling.js";
 
 dotenv.config(); // Load environment variables
 
+
+
 const allowedOrigins = [
-  "http://localhost:3000", // Dev
-  "https://ezbookings.netlify.app/"
+  "https://ezbookings.netlify.app"
 ];
 
-const app = express();
-app.use (cors({origin:(origin,callback) =>{
-  if(!origin || allowedOrigins.includes(origin)){
-    callback(null,true);
-  }else{
-    callback(new Error("Not allowed by CORS"));
-
-  }
-},
-credentials:true
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
+
 app.use(express.json());
 
 // Use routers

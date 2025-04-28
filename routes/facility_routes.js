@@ -13,7 +13,7 @@ const router = express.Router();
 // const upload = multer({ Dest:'uploads/' });
 
 router.post("/",authenticate,authorize (["admin", "manager"]), facilityPicturesUpload.array('pictures',5),addFacility);
-router.get("/",authenticate,getFacilities);
+router.get("/",getFacilities);
 router.put("/:id",authenticate,authorize('manager'),facilityPicturesUpload.array('pictures',5),updateFacility);
 router.delete("/:id",authenticate,authorize(['manager','admin']),deleteFacility);
 

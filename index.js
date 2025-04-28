@@ -1,9 +1,19 @@
 // index.js
 import express from "express";
 import mongoose from "mongoose";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import cors from "cors";
+import mongoSanitize from "express-mongo-sanitize";
 
+
+
+
+const limiter = rateLimit({windowMs:15 * 60 * 1000,//15 minutes
+  max: 100,// Max 100 requests per IP
+  messag:"Too many requests from this IP,please try again later."
+  });
+ 
 // Routes
 import userRouter from "./routes/users_routes.js";
 import facilityRouter from "./routes/facility_routes.js";
@@ -19,6 +29,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://ezbookings.netlify.app"
 ];
+
+
 
 const app = express();
 app.use (cors({origin:(origin,callback) =>{
@@ -40,6 +52,13 @@ app.use("/api/bookings", bookingRouter);
 
 // Error handling middleware (last)
 app.use(errorHandler);
+
+//Rate limiter
+
+app.use(limiter);
+
+//Mongo Db sanitize
+app.use(mongoSanitize());
 
 // Dynamic port for Render
 const PORT = process.env.PORT || 10000;

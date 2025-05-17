@@ -6,7 +6,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoSanitize from "express-mongo-sanitize";
 
-
+// ✅ Trust the Render proxy
+app.set('trust proxy', 1);
 
 
 const limiter = rateLimit({windowMs:15 * 60 * 1000,//15 minutes

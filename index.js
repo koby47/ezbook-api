@@ -7,7 +7,7 @@ import cors from "cors";
 import mongoSanitize from "express-mongo-sanitize";
 
 // ✅ Trust the Render proxy
-app.set('trust proxy', 1);
+
 
 
 const limiter = rateLimit({windowMs:15 * 60 * 1000,//15 minutes
@@ -45,6 +45,8 @@ app.use (cors({origin:(origin,callback) =>{
 credentials:true
 }));
 app.use(express.json());
+
+app.set('trust proxy', 1);
 
 // Use routers
 app.use("/api/user", userRouter);

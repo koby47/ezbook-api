@@ -27,7 +27,7 @@ dotenv.config(); // Load environment variables
 
 const allowedOrigins = [
   "http://localhost:5173",//Dev
-  "https://ezbooki.netlify.app/"
+  "https://ezbooki.netlify.app"
 ];
 
 

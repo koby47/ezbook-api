@@ -26,9 +26,8 @@ import errorHandler from "./middlewares/errorhandling.js";
 dotenv.config(); // Load environment variables
 
 const allowedOrigins = [
-  "http://localhost:3000", // Dev
-  "http://localhost:5173",
-  "https://ezbookings.netlify.app"
+  "http://localhost:5173",//Dev
+  "https://ezbooki.netlify.app/"
 ];
 
 

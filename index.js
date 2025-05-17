@@ -60,8 +60,7 @@ app.use(errorHandler);
 
 app.use(limiter);
 
-//Mongo Db sanitize
-app.use(mongoSanitize());
+
 
 // Dynamic port for Render
 const PORT = process.env.PORT || 10000;

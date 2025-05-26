@@ -5,6 +5,8 @@ import { registerValidator,loginValidator } from '../validators/users_validators
 import { sendEmail } from '../utils/sendEmails.js';
 import { Parser } from 'json2csv';
 import PDFDocument from 'pdfkit';
+import { verifyGoogleToken } from '../utils/firebaseAdmin.js';
+
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -149,5 +151,46 @@ export const loginUser = async (req, res) => {
       console.error("Error fetching users:", error.message);
       res.status(500).json({ error: "Error fetching users" });
     }
-  };
-  
+  };export const googleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ message: "Token is required" });
+
+    const googleUser = await verifyGoogleToken(token);
+    const { email, name, picture } = googleUser;
+
+    // Check if user exists
+    let user = await UserModel.findOne({ email });
+
+    if (!user) {
+      // Create new user (default role is "user")
+      user = await UserModel.create({
+        email,
+        username: name,
+        avatar: picture,
+        role: "user", // or allow manager selection
+      });
+    }
+
+    // Generate JWT
+    const jwtToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+      algorithm: "HS256",
+    });
+
+    res.json({
+      message: "Google login successful",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+      },
+      token: jwtToken,
+    });
+  } catch (error) {
+    console.error("Google login failed:", error);
+    res.status(401).json({ message: "Invalid or expired token" });
+  }
+};

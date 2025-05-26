@@ -2,13 +2,14 @@ import express from 'express';
 import{
     registerUser,
     loginUser,
-    getCurrentUser,getAllUsers
+    getCurrentUser,getAllUsers,googleLogin
 } from '../controllers/users_controllers.js';
 import { authenticate } from '../middlewares/auth.js';
 
 import { authorize } from '../middlewares/auth.js';
 const router = express.Router();
 
+router.post("/google-login",googleLogin);
 router.post("/register",registerUser);
 router.post("/login",loginUser);
 router.get("/me", authenticate, getCurrentUser);

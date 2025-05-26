@@ -4,7 +4,9 @@ import {readFileSync} from "fs";
 
 
 //Load service account credentials
-const serviceAccount =JSON.parse(readFileSync(new URL("../config/firebaseServiceAccountkey.json",import.meta.url)));
+// const serviceAccount =JSON.parse(readFileSync(new URL("../config/firebaseServiceAccountkey.json",import.meta.url)));
+
+const serviceAccount =JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 //Initialize Firebase Admin if not alread initialized
 if (!admin.apps.length){

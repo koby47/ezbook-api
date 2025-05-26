@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import cors from "cors";
 
+dotenv.config(); // Load environment variables
 
 // ✅ Trust the Render proxy
 
@@ -23,7 +24,7 @@ import bookingRouter from "./routes/booking_routes.js";
 // Middlewares
 import errorHandler from "./middlewares/errorhandling.js";
 
-dotenv.config(); // Load environment variables
+
 
 const allowedOrigins = [
   "http://localhost:5173",//Dev

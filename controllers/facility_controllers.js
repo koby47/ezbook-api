@@ -18,7 +18,7 @@ import { addFacilityValidator } from '../validators/facility_validators.js';
 
 export const addFacility = async (req, res) => {
   try {
-    const pictures = req.files ? req.files.map(file => file.filename) : [];
+    const pictures = req.files ? req.files.map(file => file.path) : [];
 
     // Inject pictures into validation object
     const { error, value } = addFacilityValidator.validate(

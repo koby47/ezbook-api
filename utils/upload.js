@@ -2,6 +2,7 @@ import multer from 'multer';
 import{v2 as cloudinary} from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import dotenv from 'dotenv'
+import path  from 'path';
 
 dotenv.config()
 
@@ -21,7 +22,8 @@ export const facilityPicturesUpload =multer({
         cloudinary,
         params:{
             folder:'ezbook-api/facility-pictures',
-            public_id:(req,file) => file.originalname,
-        }
-    })
+            public_id:(req,file) => {
+                return path.parse(file.originalname).name;},
+        },
+    }),
 });

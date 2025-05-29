@@ -44,8 +44,6 @@ export const addFacility = async (req, res) => {
 };
 
 
-
-
 export const getFacilities = async (req, res) => {
   try {
     const {
@@ -55,20 +53,20 @@ export const getFacilities = async (req, res) => {
       maxPrice,
       availability,
       keyword,
-      sortBy = "price",
-      order = "asc",
+      sortBy = "createdAt",  // ✅ Sort by createdAt by default
+      order = "desc",         // ✅ Descending order (latest first)
       page = 1,
-      limit = 6
+      limit = 8
     } = req.query;
 
     const filter = {};
 
-    // Only show manager's own facilities
-    if (req.user.role === "manager") {
+    // ✅ Manager-specific filtering
+    if (req.user?.role === "manager") {
       filter.createdBy = req.user._id;
     }
 
-    //  Text search on name or description
+    // ✅ Keyword search (name/description)
     if (keyword) {
       filter.$or = [
         { name: { $regex: keyword, $options: "i" } },
@@ -76,30 +74,30 @@ export const getFacilities = async (req, res) => {
       ];
     }
 
-    // 🏷 Type and Location
+    // ✅ Filter by type and location
     if (type) filter.type = new RegExp(`^${type}$`, "i");
     if (location) filter.location = new RegExp(`^${location}$`, "i");
 
-    // Price range
+    // ✅ Price range
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    //  Availability
+    // ✅ Availability
     if (availability !== undefined) {
       filter.availability = availability === "true";
     }
 
-    // Pagination
+    // ✅ Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // ↕ Sorting
+    // ✅ Sorting
     const sort = {};
     sort[sortBy] = order === "desc" ? -1 : 1;
 
-    //  Query with filters
+    // ✅ Query the DB
     const facilities = await FacilityModel.find(filter)
       .sort(sort)
       .skip(skip)
@@ -115,10 +113,12 @@ export const getFacilities = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(" Facility Filter Error:", err.message);
+    console.error("Facility Filter Error:", err.message);
     res.status(500).json({ error: "Error filtering facilities" });
   }
 };
+
+
 
 export const updateFacility = async(req,res)=>{
     try{

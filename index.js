@@ -7,15 +7,6 @@ import cors from "cors";
 
 dotenv.config(); // Load environment variables
 
-// ✅ Trust the Render proxy
-
-
-
-const limiter = rateLimit({windowMs:15 * 60 * 1000,//15 minutes
-  max: 100,// Max 100 requests per IP
-  messag:"Too many requests from this IP,please try again later."
-  });
- 
 // Routes
 import userRouter from "./routes/users_routes.js";
 import facilityRouter from "./routes/facility_routes.js";
@@ -44,6 +35,9 @@ app.use (cors({origin:(origin,callback) =>{
 },
 credentials:true
 }));
+
+
+
 app.use(express.json());
 
 app.set('trust proxy', 1);
@@ -57,7 +51,11 @@ app.use("/api/bookings", bookingRouter);
 app.use(errorHandler);
 
 //Rate limiter
-
+const limiter = rateLimit({windowMs:15 * 60 * 1000,//15 minutes
+  max: 100,// Max 100 requests per IP
+  messag:"Too many requests from this IP,please try again later."
+  });
+ 
 app.use(limiter);
 
 

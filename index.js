@@ -42,6 +42,11 @@ app.use(express.json());
 
 app.set('trust proxy', 1);
 
+app.use((req, res, next) => {
+  console.log("🧾 Origin:", req.headers.origin);
+  console.log("🛠  Method:", req.method, "→", req.originalUrl);
+  next();
+});
 // Use routers
 app.use("/api/user", userRouter);
 app.use("/api/facility", facilityRouter);

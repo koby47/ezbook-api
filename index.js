@@ -4,16 +4,16 @@ import mongoose from "mongoose";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import cors from "cors";
-
-dotenv.config(); // Load environment variables
-
-// Routes
 import userRouter from "./routes/users_routes.js";
 import facilityRouter from "./routes/facility_routes.js";
 import bookingRouter from "./routes/booking_routes.js";
 
 // Middlewares
 import errorHandler from "./middlewares/errorhandling.js";
+
+
+dotenv.config(); // Load environment variables
+const app = express();
 
 
 
@@ -24,7 +24,7 @@ const allowedOrigins = [
 
 
 
-const app = express();
+
 app.use (cors({origin:(origin,callback) =>{
   if(!origin || allowedOrigins.includes(origin)){
     callback(null,true);
@@ -33,14 +33,15 @@ app.use (cors({origin:(origin,callback) =>{
 
   }
 },
-credentials:true
+// credentials:true, //allow cookies /auth headers
 }));
 
 
+app.set('trust proxy', 1);
 
 app.use(express.json());
 
-app.set('trust proxy', 1);
+
 
 app.use((req, res, next) => {
   console.log("🧾 Origin:", req.headers.origin);

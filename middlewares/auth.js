@@ -30,15 +30,20 @@ export const authenticate = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // decoded = { userId, role }
-
     const user = await UserModel.findById(decoded.userId).select("-password");
 
     if (!user) {
       return res.status(401).json({ error: "Unauthorized: User not found" });
     }
 
-    req.user = user; // attach full user to the request
+    // ✅ Normalize user data
+    req.user = {
+      userId: user._id.toString(),
+      role: user.role,
+      name: user.userName,
+      email: user.email,
+    };
+
     next();
   } catch (err) {
     return res.status(401).json({ error: "Unauthorized: Invalid token" });

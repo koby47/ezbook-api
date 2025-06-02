@@ -86,6 +86,109 @@ export const getBookings = async (req, res) => {
 
 
 
+// export const getMyBookings = async (req, res) => {
+//   try {
+//     const {
+//       startDate,
+//       endDate,
+//       page = 1,
+//       limit = 5
+//     } = req.query;
+
+//     const skip = (page - 1) * parseInt(limit);
+//     let filter = {};
+//     let bookings;
+
+//     // 🧑‍💼 Manager
+//     if (req.user.role === "manager") {
+//       bookings = await BookingModel.find()
+//         .populate({
+//           path: "facilityId",
+//           select: "name location price createdBy",
+//           match: { createdBy: req.user._id }
+//         })
+//         .populate("userId", "userName email")
+//         .sort({ date: -1 });
+
+//       // Filter out bookings not related to their facilities
+//       bookings = bookings.filter(b => b.facilityId !== null);
+
+//       // Filter by date (optional)
+//       if (startDate || endDate) {
+//         bookings = bookings.filter(b => {
+//           const bookingDate = new Date(b.date);
+//           if (startDate && bookingDate < new Date(startDate)) return false;
+//           if (endDate && bookingDate > new Date(endDate)) return false;
+//           return true;
+//         });
+//       }
+
+//       const paginated = bookings.slice(skip, skip + parseInt(limit));
+//       return res.status(200).json({
+//         total: bookings.length,
+//         page: parseInt(page),
+//         count: paginated.length,
+//         bookings: paginated
+//       });
+
+//     }
+
+//     // 🛡 Admin → See ALL bookings
+//     if (req.user.role === "admin") {
+//       filter = {}; // No restrictions
+
+//       if (startDate || endDate) {
+//         filter.date = {};
+//         if (startDate) filter.date.$gte = new Date(startDate);
+//         if (endDate) filter.date.$lte = new Date(endDate);
+//       }
+
+//       bookings = await BookingModel.find(filter)
+//         .populate("facilityId", "name location price createdBy")
+//         .populate("userId", "userName email")
+//         .sort({ date: -1 })
+//         .skip(skip)
+//         .limit(parseInt(limit));
+
+//       const total = await BookingModel.countDocuments(filter);
+//       return res.status(200).json({
+//         total,
+//         page: parseInt(page),
+//         count: bookings.length,
+//         bookings
+//       });
+//     }
+
+//     // 🧍‍♂️ Regular User
+//     filter.userId = req.user.userId;
+
+//     if (startDate || endDate) {
+//       filter.date = {};
+//       if (startDate) filter.date.$gte = new Date(startDate);
+//       if (endDate) filter.date.$lte = new Date(endDate);
+//     }
+
+//     bookings = await BookingModel.find(filter)
+//       .populate("facilityId", "name location price")
+//       .sort({ date: -1 })
+//       .skip(skip)
+//       .limit(parseInt(limit));
+
+//     const total = await BookingModel.countDocuments(filter);
+
+//     res.status(200).json({
+//       total,
+//       page: parseInt(page),
+//       count: bookings.length,
+//       bookings
+//     });
+
+//   } catch (err) {
+//     console.error("Get My Bookings Error:", err.message);
+//     res.status(500).json({ error: "Error fetching your bookings" });
+//   }
+// };
+
 export const getMyBookings = async (req, res) => {
   try {
     const {
@@ -130,13 +233,10 @@ export const getMyBookings = async (req, res) => {
         count: paginated.length,
         bookings: paginated
       });
-
     }
 
     // 🛡 Admin → See ALL bookings
     if (req.user.role === "admin") {
-      filter = {}; // No restrictions
-
       if (startDate || endDate) {
         filter.date = {};
         if (startDate) filter.date.$gte = new Date(startDate);
@@ -160,13 +260,15 @@ export const getMyBookings = async (req, res) => {
     }
 
     // 🧍‍♂️ Regular User
-    filter.userId = req.user.userId;
+    filter.userId = new mongoose.Types.ObjectId(req.user.userId); // ✅ Convert to ObjectId
 
     if (startDate || endDate) {
       filter.date = {};
       if (startDate) filter.date.$gte = new Date(startDate);
       if (endDate) filter.date.$lte = new Date(endDate);
     }
+
+    console.log("🔍 Filtering bookings for userId:", filter.userId); // ✅ Debug log
 
     bookings = await BookingModel.find(filter)
       .populate("facilityId", "name location price")
@@ -176,7 +278,7 @@ export const getMyBookings = async (req, res) => {
 
     const total = await BookingModel.countDocuments(filter);
 
-    res.status(200).json({
+    return res.status(200).json({
       total,
       page: parseInt(page),
       count: bookings.length,
@@ -185,7 +287,7 @@ export const getMyBookings = async (req, res) => {
 
   } catch (err) {
     console.error("Get My Bookings Error:", err.message);
-    res.status(500).json({ error: "Error fetching your bookings" });
+    return res.status(500).json({ error: "Error fetching your bookings" });
   }
 };
 

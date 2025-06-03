@@ -351,6 +351,44 @@ export const updateBookingStatus = async (req, res) => {
   }
 };
 
+// PATCH /api/bookings/user/:id
+export const userUpdateBooking = async (req, res) => {
+  try {
+    const { status, date, startTime, endTime, package: pkg } = req.body;
+
+    // Validate input
+    if (status && !["cancelled"].includes(status)) {
+      return res.status(400).json({ error: "Users can only cancel their bookings" });
+    }
+
+    const booking = await BookingModel.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    // Only the booking owner can update
+    if (String(booking.userId) !== String(req.user._id)) {
+      return res.status(403).json({ error: "You can only modify your own bookings" });
+    }
+
+    if (status) booking.status = status;
+    if (date) booking.date = date;
+    if (startTime) booking.startTime = startTime;
+    if (endTime) booking.endTime = endTime;
+    if (pkg !== undefined) booking.package = pkg;
+
+    booking.updatedAt = new Date();
+
+    await booking.save();
+
+    return res.status(200).json({ message: "Booking updated", booking });
+  } catch (err) {
+    console.error("User Booking Update Error:", err.message);
+    return res.status(500).json({ error: "Error updating booking" });
+  }
+};
+
 
 
 export const deleteBooking = async (req, res) => {

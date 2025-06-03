@@ -18,6 +18,7 @@ router.get("/mine", authenticate, getMyBookings);
 router.put("/:id", authenticate, authorize(["manager"]), updateBookingStatus);
 router.delete("/:id", authenticate, authorize(["manager"]), deleteBooking);
 router.get("/mine/pdf", authenticate, exportMyBookingsToPDF);
+router.patch("/user/:id", authenticate, userUpdateBooking);
 
 
 export default router;

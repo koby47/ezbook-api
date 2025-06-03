@@ -5,7 +5,7 @@ import {
   updateBookingStatus,
   deleteBooking,
   getMyBookings,
-  exportMyBookingsToPDF
+  exportMyBookingsToPDF,userUpdateBooking
 } from '../controllers/booking_controllers.js';
 
 import { authenticate, authorize } from "../middlewares/auth.js";

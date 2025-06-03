@@ -356,7 +356,7 @@ export const userUpdateBooking = async (req, res) => {
   try {
     const { status, date, startTime, endTime, package: pkg } = req.body;
 
-    // Validate input
+    // Validate allowed status
     if (status && !["cancelled"].includes(status)) {
       return res.status(400).json({ error: "Users can only cancel their bookings" });
     }
@@ -367,11 +367,17 @@ export const userUpdateBooking = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    // Only the booking owner can update
-    if (String(booking.userId) !== String(req.user._id)) {
+    // ✅ Fix: use userId instead of _id
+    if (String(booking.userId) !== String(req.user.userId)) {
       return res.status(403).json({ error: "You can only modify your own bookings" });
     }
 
+    // Only allow update if status is still pending
+    if (booking.status !== "pending") {
+      return res.status(400).json({ error: "Only pending bookings can be updated" });
+    }
+
+    // Apply updates
     if (status) booking.status = status;
     if (date) booking.date = date;
     if (startTime) booking.startTime = startTime;
@@ -379,7 +385,6 @@ export const userUpdateBooking = async (req, res) => {
     if (pkg !== undefined) booking.package = pkg;
 
     booking.updatedAt = new Date();
-
     await booking.save();
 
     return res.status(200).json({ message: "Booking updated", booking });
@@ -388,6 +393,7 @@ export const userUpdateBooking = async (req, res) => {
     return res.status(500).json({ error: "Error updating booking" });
   }
 };
+
 
 
 

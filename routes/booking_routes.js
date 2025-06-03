@@ -14,11 +14,11 @@ const router = express.Router();
 
 router.post("/", authenticate, createBooking);
 router.get("/", authenticate, authorize(["manager","admin"]),getBookings);
-router.get("/mine", authenticate, getMyBookings);
+router.get("/mine", authenticate, getMyBookings);//normal user
 router.put("/:id", authenticate, authorize(["manager"]), updateBookingStatus);
 router.delete("/:id", authenticate, authorize(["manager"]), deleteBooking);
 router.get("/mine/pdf", authenticate, exportMyBookingsToPDF);
-router.patch("/user/:id", authenticate, userUpdateBooking);
+router.patch("/user/:id", authenticate, userUpdateBooking);//normal user update
 
 
 export default router;

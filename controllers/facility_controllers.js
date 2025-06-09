@@ -1,38 +1,26 @@
 import{FacilityModel } from '../models/facility_models.js';
 import { addFacilityValidator } from '../validators/facility_validators.js';
 
-// export const addFacility = async(req,res) =>{
-//     try{
-//         const pictures = req.files ? req.files.map(file => file.filename) : [];
-//         const {error,value} = addFacilityValidator.validate({...req.body,pictures},{abortEarly:false});
 
-//         if(error) return res.status(422).json({errors:error.details.manp(e => e.message)});
 
-//         const facility = await FacilityModel.create(value);
-//         res.status(201).json({message:"Facility created successfully",facility});
-//     }catch (err) {
-//       console.error(" Facility Creation Error:", err.message);
-//       res.status(500).json({ error: "Error adding facility" });
-//     }
-// };
 export const addFacility = async (req, res) => {
   try {
     const pictures = req.files ? req.files.map(file => file.path) : [];
 
-    // Inject createdBy before validation
-    const dataToValidate = {
-      ...req.body,
-      pictures,
-      createdBy: req.user._id, // ✅ include before validation
-    };
+    // Inject pictures into validation object
+    const { error, value } = addFacilityValidator.validate(
+      { ...req.body, pictures },
+      { abortEarly: false }
+    );
 
-    const { error, value } = addFacilityValidator.validate(dataToValidate, { abortEarly: false });
+  
+    if (error) return res.status(422).json({ errors: error.details.map(e => e.message) });
 
-    if (error) {
-      return res.status(422).json({ errors: error.details.map(e => e.message) });
-    }
-
-    const facility = await FacilityModel.create(value);
+    // Add createdBy from logged-in user
+    const facility = await FacilityModel.create({
+      ...value,
+      createdBy: req.user._id
+    });
 
     res.status(201).json({ message: "Facility created successfully", facility });
 
@@ -41,6 +29,7 @@ export const addFacility = async (req, res) => {
     res.status(500).json({ error: "Error adding facility" });
   }
 };
+
 
 export const getFacilities = async (req, res) => {
   try {

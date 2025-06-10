@@ -19,7 +19,7 @@ export const addFacility = async (req, res) => {
     // Add createdBy from logged-in user
     const facility = await FacilityModel.create({
       ...value,
-      createdBy: req.user._id
+      createdBy:req.user.userId,
     });
 
     res.status(201).json({ message: "Facility created successfully", facility });

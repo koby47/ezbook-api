@@ -6,6 +6,7 @@ import { sendEmail } from '../utils/sendEmails.js';
 import { Parser } from 'json2csv';
 import PDFDocument from 'pdfkit';
 import { verifyGoogleToken } from '../utils/firebaseAdmin.js';
+import crypto from 'crypto'
 
 
 
@@ -23,32 +24,73 @@ export const registerUser = async(req,res) => {
         }
 
        
-
+        //hash password
         value.password = await bcrypt.hash(value.password,10);
 
         //  Remove confirmPassword so Mongoose doesn't throw
           delete value.confirmPassword;
-          
+
+          //Generate verification token
+          const token =crypto.randomBytes(32).toString("hex");
+          const expires =new Date(Date.now()+24*60*60*1000);//expires in 24h
+
+          value.verificationToken = token;
+          value.verificationTokenExpires =expires;
+
           //Now save to DB
         const user = await UserModel.create(value
           );
 
+          const verificationLink =`https://ezbook-api.onrender.com/api/user/verify-email?token=${token}`;
+
         await sendEmail({
           to: user.email,
-          subject: "Welcome to EzBook!",
+          subject: "Verify Your Email for Ezbook",
           text: `Hi ${user.userName}, welcome to EzBook!`,
           html: `
-            <h2>Welcome to EzBook, ${user.userName}!</h2>
+            <h2>Hello ${user.userName}</h2>
             <p>Your account has been successfully created.</p>
+            <p>Please verify your email by clicking the link below:</p>
+            <a href="${verificationLink}">Verify Email</a>
+            <p>This link will expire in 24 hours.</p>
             <p>We’re excited to have you onboard.</p>
           `
         });
        
-        res.status(201).json({message:"User registered successfully",user});
+        res.status(201).json({message:"User registered successfully.Please verify your email",user});
      } catch(error){
+      console.error("Registration error:",error);
         res.status(500).json({error:"Registration failed"});
      }
-}
+};
+
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    const user = await UserModel.findOne({
+      verificationToken: token,
+      verificationTokenExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      // Redirect to "invalid token" page on frontend
+      return res.redirect("https://ezbooki.netlify.app/invalid-token");
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
+
+    // Redirect to "email verified" page on frontend
+    res.redirect("https://ezbooki.netlify.app/email-verified");
+  } catch (err) {
+    console.error("Email verification error:", err);
+    res.redirect("https://ezbooki.netlify.app/error-verifying");
+  }
+};
+
 
 export const loginUser = async (req, res) => {
     try {
@@ -57,6 +99,11 @@ export const loginUser = async (req, res) => {
   
       const user = await UserModel.findOne({ email: value.email });
       if (!user) return res.status(404).json({ error: "Invalid credentials" });
+
+      //check if email is verified
+      if(!user.isVerified){
+        return res.status(403).json({error:"Email Not Verified"})
+      }
   
       const match = await bcrypt.compare(value.password, user.password);
       if (!match) return res.status(401).json({ error: "Invalid credentials" });

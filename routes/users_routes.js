@@ -2,7 +2,7 @@ import express from 'express';
 import{
     registerUser,
     loginUser,
-    getCurrentUser,getAllUsers,googleLogin
+    getCurrentUser,getAllUsers,googleLogin,verifyEmail
 } from '../controllers/users_controllers.js';
 import { authenticate } from '../middlewares/auth.js';
 
@@ -13,6 +13,8 @@ router.post("/google-login",googleLogin);
 router.post("/register",registerUser);
 router.post("/login",loginUser);
 router.get("/me", authenticate, getCurrentUser);
+router.get('/verify-email', verifyEmail);
+
 // Only admins:
 router.get("/all", authenticate, authorize(["admin"]), getAllUsers);
 

@@ -233,7 +233,7 @@ export const loginUser = async (req, res) => {
       message: "Google login successful",
       user: {
         id: user._id,
-        username: user.username,
+        username: user.userName,
         email: user.email,
         role: user.role,
         avatar: user.avatar,

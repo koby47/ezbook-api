@@ -198,7 +198,9 @@ export const loginUser = async (req, res) => {
       console.error("Error fetching users:", error.message);
       res.status(500).json({ error: "Error fetching users" });
     }
-  };export const googleLogin = async (req, res) => {
+  };
+  
+  export const googleLogin = async (req, res) => {
   try {
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: "Token is required" });
@@ -213,9 +215,11 @@ export const loginUser = async (req, res) => {
       // Create new user (default role is "user")
       user = await UserModel.create({
         email,
-        username: name,
+        userName: name,
         avatar: picture,
         role: "user", // or allow manager selection
+        fromGoogle:true,   //Flag for Google users
+        isVerified:true   //Mark Google users as verified
       });
     }
 

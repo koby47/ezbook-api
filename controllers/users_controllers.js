@@ -202,7 +202,7 @@ export const loginUser = async (req, res) => {
   
   export const googleLogin = async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token, role ="user" } = req.body;
     if (!token) return res.status(400).json({ message: "Token is required" });
 
     const googleUser = await verifyGoogleToken(token);
@@ -217,7 +217,7 @@ export const loginUser = async (req, res) => {
         email,
         userName: name,
         avatar: picture,
-        role: "user", // or allow manager selection
+        role, // or allow manager selection
         fromGoogle:true,   //Flag for Google users
         isVerified:true   //Mark Google users as verified
       });

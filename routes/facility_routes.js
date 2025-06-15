@@ -3,6 +3,7 @@ import{
     addFacility,
     getFacilities,
     updateFacility,
+    getSingleFacility,
     deleteFacility,
 } from '../controllers/facility_controllers.js';
 import { facilityPicturesUpload } from '../utils/upload.js';
@@ -16,6 +17,8 @@ router.post("/",authenticate,authorize (["admin", "manager"]), facilityPicturesU
 router.get("/",authenticate,getFacilities);
 router.put("/:id",authenticate,authorize('manager'),facilityPicturesUpload.array('pictures',5),updateFacility);
 router.delete("/:id",authenticate,authorize(['manager','admin']),deleteFacility);
+router.get("/:id", authenticate, getSingleFacility); // ✅ New route
+
 
 export default router;
 // This code defines an Express router for managing facilities.

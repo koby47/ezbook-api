@@ -105,6 +105,19 @@ export const getFacilities = async (req, res) => {
   }
 };
 
+export const getSingleFacility = async (req, res) => {
+  try {
+    const facility = await FacilityModel.findById(req.params.id);
+    if (!facility) {
+      return res.status(404).json({ error: "Facility not found" });
+    }
+    res.status(200).json({ facility });
+  } catch (err) {
+    console.error("Get Single Facility Error:", err.message);
+    res.status(500).json({ error: "Error fetching facility" });
+  }
+};
+
 
 
 export const updateFacility = async(req,res)=>{

@@ -93,32 +93,58 @@ export const verifyEmail = async (req, res) => {
 
 
 export const loginUser = async (req, res) => {
-    try {
-      const { error, value } = loginValidator.validate(req.body, { abortEarly: false });
-      if (error) return res.status(422).json({ errors: error.details.map(e => e.message) });
-  
-      const user = await UserModel.findOne({ email: value.email });
-      if (!user) return res.status(404).json({ error: "Invalid credentials" });
-
-      //check if email is verified
-      if(!user.isVerified){
-        return res.status(403).json({error:"Email Not Verified"})
-      }
-  
-      const match = await bcrypt.compare(value.password, user.password);
-      if (!match) return res.status(401).json({ error: "Invalid credentials" });
-  
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },
-         JWT_SECRET,
-          { expiresIn: "7d", algorithm: "HS256" });
-  
-      res.json({ message: "Login successful", token, user });
-    } catch (err) {
-      res.status(500).json({ error: "Login failed" });
+  try {
+    // Validate input
+    const { error, value } = loginValidator.validate(req.body, { abortEarly: false });
+    if (error) {
+      return res.status(422).json({ errors: error.details.map(e => e.message) });
     }
-  };
-  
+
+    // Find user by email
+    const user = await UserModel.findOne({ email: value.email });
+    if (!user) {
+      return res.status(404).json({ error: "Invalid credentials" });
+    }
+
+    // Check if email is verified
+    if (!user.isVerified) {
+      return res.status(403).json({ error: "Email not verified" });
+    }
+
+    // Compare password
+    const match = await bcrypt.compare(value.password, user.password);
+    if (!match) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Ensure JWT_SECRET is available
+    if (!JWT_SECRET) {
+      console.error("JWT_SECRET is not defined in environment variables.");
+      return res.status(500).json({ error: "Server configuration error" });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "7d", algorithm: "HS256" }
+    );
+
+    // Sanitize user object before sending
+    const { password, verificationToken, verificationTokenExpires, ...safeUser } = user._doc;
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: safeUser
+    });
+
+  } catch (err) {
+    console.error("Login error:", err.message);
+    res.status(500).json({ error: "Login failed. Please try again." });
+  }
+};
+
   export const getCurrentUser = async(req,res) =>{
     try{
       const user = req.user;

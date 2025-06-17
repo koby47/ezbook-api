@@ -5,6 +5,8 @@ import{
     getCurrentUser,getAllUsers,googleLogin,verifyEmail
 } from '../controllers/users_controllers.js';
 import { authenticate } from '../middlewares/auth.js';
+import { avatarUpload } from '../utils/upload.js'
+import { uploadAvatar } from '../controllers/users_controllers.js';
 
 import { authorize } from '../middlewares/auth.js';
 const router = express.Router();
@@ -14,6 +16,7 @@ router.post("/register",registerUser);
 router.post("/login",loginUser);
 router.get("/me", authenticate, getCurrentUser);
 router.get('/verify-email', verifyEmail);
+router.patch("/me/avatar", authenticate, avatarUpload.single("avatar"), uploadAvatar);
 
 // Only admins:
 router.get("/all", authenticate, authorize(["admin"]), getAllUsers);

@@ -154,6 +154,27 @@ export const loginUser = async (req, res) => {
   }
 };
 
+export const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({ error: "No image uploaded" });
+    }
+
+    const userId = req.user.userId;
+    const avatarUrl = req.file.path;
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      { avatar: avatarUrl },
+      { new: true }
+    ).select("-password");
+
+    res.status(200).json({ user: updatedUser });
+  } catch (err) {
+    console.error("Upload Avatar Error:", err);
+    res.status(500).json({ error: "Failed to upload avatar" });
+  }
+};
 
 
   export const getAllUsers = async (req, res) => {

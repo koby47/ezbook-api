@@ -27,3 +27,16 @@ export const facilityPicturesUpload =multer({
         },
     }),
 });
+
+// Avatar upload (for user profiles)
+export const avatarUpload = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: 'ezbook-api/avatars',
+      public_id: (req, file) => path.parse(file.originalname).name,
+      allowed_formats: ['jpg', 'jpeg', 'png'],
+      transformation: [{ width: 300, height: 300, crop: "thumb", gravity: "face" }]
+    },
+  }),
+});

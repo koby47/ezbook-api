@@ -145,14 +145,16 @@ export const loginUser = async (req, res) => {
   }
 };
 
-  export const getCurrentUser = async(req,res) =>{
-    try{
-      const user = req.user;
-      res.status(200).json({user}); 
-    }catch(err){
-      res.status(500),json({error:"Error fetching current user"});
-    }
-  };
+ export const getCurrentUser = async (req, res) => {
+  try {
+    const user = req.user;
+    res.status(200).json({ user });
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching current user" });
+  }
+};
+
+
 
   export const getAllUsers = async (req, res) => {
     try {
@@ -239,7 +241,7 @@ export const loginUser = async (req, res) => {
 
     if (!user) {
       // only allow 'user' or 'manager' role(prevent spoofing)
-      const validRole =['user','manager'].includes(role) ? role :'user';
+      const  validRole =['user','manager'].includes(role) ? role :'user';
 
       user = await UserModel.create({
         email,

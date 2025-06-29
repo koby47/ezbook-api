@@ -7,6 +7,8 @@ import cors from "cors";
 import userRouter from "./routes/users_routes.js";
 import facilityRouter from "./routes/facility_routes.js";
 import bookingRouter from "./routes/booking_routes.js";
+import managerRouter from "./routes/manager_routes.js";
+
 
 // Middlewares
 import errorHandler from "./middlewares/errorhandling.js";
@@ -53,6 +55,8 @@ app.use((req, res, next) => {
 app.use("/api/user", userRouter);
 app.use("/api/facility", facilityRouter);
 app.use("/api/bookings", bookingRouter);
+app.use("/api/manager", managerRouter);
+
 
 // Error handling middleware (last)
 app.use(errorHandler);

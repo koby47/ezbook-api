@@ -1,7 +1,7 @@
 import { FacilityModel } from "../models/facility_models.js";
 import { BookingModel } from "../models/booking_models.js";
 
-export const getManagerOverview = async (req,res) => {
+export const getManagerOverview = async (req, res) => {
   try {
     const managerId = req.user._id;
 
@@ -23,9 +23,21 @@ export const getManagerOverview = async (req,res) => {
       status: "pending"
     });
 
-    // ⚠️ Notifications logic depends on your notification schema
-    // Placeholder: returning 0 for now
-    const notifications = 0;
+    // 5. Generate notifications for pending bookings
+    const pendingBookings = await BookingModel.find({
+      facilityId: { $in: facilityIds },
+      status: "pending"
+    })
+    .populate("facilityId", "name")
+    .populate("userId", "userName")
+    .sort({ createdAt: -1 }) // Latest first
+    .limit(5); // Limit to 5 notifications
+
+    const notifications = pendingBookings.map(b => ({
+      message: `New booking for ${b.facilityId?.name || "Unknown Facility"} on ${new Date(b.date).toLocaleDateString()}`,
+      user: b.userId?.userName || "Unknown User",
+      date: b.createdAt,
+    }));
 
     res.status(200).json({
       totalFacilities,

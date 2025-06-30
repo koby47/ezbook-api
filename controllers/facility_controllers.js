@@ -107,6 +107,8 @@ export const getFacilities = async (req, res) => {
 
 export const getSingleFacility = async (req, res) => {
   try {
+    console.log("Fetching facility with ID:", req.params.id); // 🔍 DEBUG LOG
+
     const facility = await FacilityModel.findById(req.params.id);
     if (!facility) {
       return res.status(404).json({ error: "Facility not found" });

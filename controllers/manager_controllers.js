@@ -12,6 +12,16 @@ export const getManagerOverview = async (req, res) => {
     const facilities = await FacilityModel.find({ createdBy: managerId }).select("_id");
     const facilityIds = facilities.map(f => f._id);
 
+    // If no facilities, return early with zeros to avoid unnecessary DB queries
+    if (facilityIds.length === 0) {
+      return res.status(200).json({
+        totalFacilities: 0,
+        totalBookings: 0,
+        pendingApprovals: 0,
+        notifications: []
+      });
+    }
+
     // 3. Count all bookings linked to these facilities
     const totalBookings = await BookingModel.countDocuments({
       facilityId: { $in: facilityIds }
@@ -28,10 +38,10 @@ export const getManagerOverview = async (req, res) => {
       facilityId: { $in: facilityIds },
       status: "pending"
     })
-    .populate("facilityId", "name")
-    .populate("userId", "userName")
-    .sort({ createdAt: -1 }) // Latest first
-    .limit(5); // Limit to 5 notifications
+      .populate("facilityId", "name")
+      .populate("userId", "userName")
+      .sort({ createdAt: -1 }) // Latest first
+      .limit(5); // Limit to 5 notifications
 
     const notifications = pendingBookings.map(b => ({
       message: `New booking for ${b.facilityId?.name || "Unknown Facility"} on ${new Date(b.date).toLocaleDateString()}`,

@@ -53,9 +53,10 @@ app.use((req, res, next) => {
 });
 // Use routers
 app.use("/api/user", userRouter);
-app.use("/api/facility", facilityRouter);
-app.use("/api/bookings", bookingRouter);
 app.use("/api/manager", managerRouter);
+app.use("/api/bookings", bookingRouter);
+app.use("/api/facility", facilityRouter);
+
 
 
 // Error handling middleware (last)

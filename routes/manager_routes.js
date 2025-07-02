@@ -6,4 +6,5 @@ const router = express.Router();
 
 router.get("/overview", authenticate, authorize(["manager"]), getManagerOverview);
 
+
 export default router;

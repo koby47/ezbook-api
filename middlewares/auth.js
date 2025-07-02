@@ -22,6 +22,7 @@ export const authenticate = async (req, res, next) => {
 
     // ✅ Normalize user data
     req.user = {
+      _id: user._id,
       userId: user._id.toString(),
       role: user.role,
       name: user.userName,

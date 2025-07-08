@@ -170,19 +170,60 @@ export const updateFacility = async(req,res)=>{
 
 
 
+// export const deleteFacility = async (req, res) => {
+//   try {
+//     const facility = await FacilityModel.findById(req.params.id);
+
+//     if (!facility) {
+//       return res.status(404).json({ error: "Facility not found" });
+//     }
+
+//     //  Managers can only delete their own facilities
+//     if (
+//       req.user.role === "manager" &&
+//       String(facility.createdBy) !== String(req.user._id)
+//     ) {
+//       return res.status(403).json({
+//         error: "Forbidden: You can only delete facilities you created"
+//       });
+//     }
+
+//     // Admin can delete anything; manager validated above
+//     await facility.deleteOne();
+
+//     res.status(200).json({ message: "Facility deleted successfully" });
+
+//   } catch (error) {
+//     console.error("Delete Facility Error:", error.message);
+//     res.status(500).json({ error: "Error deleting facility" });
+//   }
+// };
+
 export const deleteFacility = async (req, res) => {
   try {
+    console.log("===== DELETE FACILITY DEBUG =====");
+    console.log("Request Params ID:", req.params.id);
+    console.log("Request User:", req.user);
+
     const facility = await FacilityModel.findById(req.params.id);
 
+    console.log("Facility Found:", facility ? "Yes" : "No");
+
     if (!facility) {
+      console.log("❌ Facility not found");
       return res.status(404).json({ error: "Facility not found" });
     }
 
-    //  Managers can only delete their own facilities
+    console.log("Facility createdBy:", facility.createdBy.toString());
+    console.log("Request user ID:", req.user._id);
+    console.log("Request user role:", req.user.role);
+
+    // Managers can only delete their own facilities
     if (
       req.user.role === "manager" &&
       String(facility.createdBy) !== String(req.user._id)
     ) {
+      console.log("❌ Forbidden: Manager attempting to delete facility not created by them");
       return res.status(403).json({
         error: "Forbidden: You can only delete facilities you created"
       });
@@ -191,6 +232,7 @@ export const deleteFacility = async (req, res) => {
     // Admin can delete anything; manager validated above
     await facility.deleteOne();
 
+    console.log("✅ Facility deleted successfully");
     res.status(200).json({ message: "Facility deleted successfully" });
 
   } catch (error) {

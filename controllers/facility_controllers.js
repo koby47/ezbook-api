@@ -205,7 +205,7 @@ export const deleteFacility = async (req, res) => {
     console.log("Request Params ID:", req.params.id);
     console.log("Request User:", req.user);
 
-    const facility = await FacilityModel.findById(req.params.id);
+    const facility = await FacilityModel.findById(req.params._id||id);
 
     console.log("Facility Found:", facility ? "Yes" : "No");
 

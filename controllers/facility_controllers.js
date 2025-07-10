@@ -170,42 +170,13 @@ export const updateFacility = async(req,res)=>{
 
 
 
-// export const deleteFacility = async (req, res) => {
-//   try {
-//     const facility = await FacilityModel.findById(req.params.id);
-
-//     if (!facility) {
-//       return res.status(404).json({ error: "Facility not found" });
-//     }
-
-//     //  Managers can only delete their own facilities
-//     if (
-//       req.user.role === "manager" &&
-//       String(facility.createdBy) !== String(req.user._id)
-//     ) {
-//       return res.status(403).json({
-//         error: "Forbidden: You can only delete facilities you created"
-//       });
-//     }
-
-//     // Admin can delete anything; manager validated above
-//     await facility.deleteOne();
-
-//     res.status(200).json({ message: "Facility deleted successfully" });
-
-//   } catch (error) {
-//     console.error("Delete Facility Error:", error.message);
-//     res.status(500).json({ error: "Error deleting facility" });
-//   }
-// };
-
 export const deleteFacility = async (req, res) => {
   try {
     console.log("===== DELETE FACILITY DEBUG =====");
     console.log("Request Params ID:", req.params.id);
     console.log("Request User:", req.user);
 
-    const facility = await FacilityModel.findById(req.params._id);
+    const facility = await FacilityModel.findById(req.params.id); // ✅ Fixed here
 
     console.log("Facility Found:", facility ? "Yes" : "No");
 

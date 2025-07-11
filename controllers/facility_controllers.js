@@ -160,11 +160,11 @@ export const updateFacility = async (req, res) => {
 
     const pictures = [...facility.pictures, ...newPictures];
 
-    // 
+    // Convert createdBy to string to satisfy validator schema
     const updatedData = {
       ...req.body,
       pictures,
-      createdBy: facility.createdBy, // inject createdBy from DB
+      createdBy: facility.createdBy.toString(), // Ensure it is a string
     };
 
     const { error, value } = addFacilityValidator.validate(updatedData, { abortEarly: false });
@@ -182,8 +182,6 @@ export const updateFacility = async (req, res) => {
     res.status(500).json({ error: "Error updating facility" });
   }
 };
-
-
 
 
 export const deleteFacility = async (req, res) => {

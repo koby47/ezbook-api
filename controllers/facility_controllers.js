@@ -149,24 +149,40 @@ export const getSingleFacility = async (req, res) => {
   }
 };
 
+export const updateFacility = async (req, res) => {
+  try {
+    const newPictures = req.files ? req.files.map(file => file.filename) : [];
+    const facility = await FacilityModel.findById(req.params.id);
 
-
-export const updateFacility = async(req,res)=>{
-    try{
-        const newPictures = req.files ? req.files.map(file => file.filename): [];
-        const facility = await FacilityModel.findById(req.params.id);
-        if(!facility) return res.status(404).json({error:"Facility not found"});
-
-        const pictures =[...facility.pictures, ...newPictures];
-        const{error,value} = addFacilityValidator.validate({...req.body,pictures},{abortEarly:false});
-        if(error) return res.status(422).json({errors:error.details.map(e => e.message)});
-
-        const updated = await FacilityModel.findByIdAndUpdate(req.params.id,value, {new:true});
-        res.json({message: "Facility updated successfully",facility:updated});
-    }catch (err){
-        res.status(500).json({error:"Error updating facility"});
+    if (!facility) {
+      return res.status(404).json({ error: "Facility not found" });
     }
+
+    const pictures = [...facility.pictures, ...newPictures];
+
+    // 
+    const updatedData = {
+      ...req.body,
+      pictures,
+      createdBy: facility.createdBy, // inject createdBy from DB
+    };
+
+    const { error, value } = addFacilityValidator.validate(updatedData, { abortEarly: false });
+
+    if (error) {
+      return res.status(422).json({ errors: error.details.map(e => e.message) });
+    }
+
+    const updated = await FacilityModel.findByIdAndUpdate(req.params.id, value, { new: true });
+
+    res.json({ message: "Facility updated successfully", facility: updated });
+
+  } catch (err) {
+    console.error("Error updating facility:", err.message);
+    res.status(500).json({ error: "Error updating facility" });
+  }
 };
+
 
 
 

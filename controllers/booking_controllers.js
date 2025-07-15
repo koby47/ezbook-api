@@ -75,14 +75,17 @@ export const createBooking = async (req, res) => {
 export const getBookings = async (req, res) => {
   try {
     const { filter = "{}", sort = "{}" } = req.query;
-    const bookings = await BookingModel.find(JSON.parse(filter)).sort(
-      JSON.parse(sort)
-    );
+    const bookings = await BookingModel.find(JSON.parse(filter))
+      .sort(JSON.parse(sort))
+      .populate("userId", "userName email") // ✅ populate user details
+      .populate("facilityId", "name location"); // ✅ populate facility details
+
     res.json(bookings);
   } catch (err) {
     res.status(500).json({ error: "Error fetching bookings" });
   }
 };
+
 
 
 
